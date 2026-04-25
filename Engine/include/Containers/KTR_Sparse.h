@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <type_traits>
-#include "KTR_assert.h"
+#include "KTR_Assert.h"
 
 //TODO doxygen doc
 

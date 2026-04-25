@@ -98,9 +98,9 @@ namespace KTR
 		}
 
 		template<typename T>
-		std::atomic_uint64_t KTR::RTTI::Instance<T>::m_lastInstance = 0;
+		std::atomic_uint64_t Instance<T>::m_lastInstance = 0;
 	}
-
+	inline std::atomic_uint64_t RTTI::Counter::m_id = 0;
 }
 
 

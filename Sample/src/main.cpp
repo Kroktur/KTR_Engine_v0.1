@@ -2,12 +2,13 @@
 
 #include <iostream>
 
-#include "KTR_application.h"
-#include "KTR_Sparse.h"
-#include "KTR_RTTI.h"
+#include "KTR_Application.h"
+#include "Containers/KTR_Sparse.h"
+#include "Tools/KTR_RTTI.h"
 
-#include "KTR_BiteSet.h"
-
+#include "Tools/KTR_BiteSet.h"
+#include "Tools/KTR_Random.h"
+ 
 enum  test : std::uint32_t
 {
 	toto = 1 << 0,
@@ -22,18 +23,12 @@ REGISTER_RTTI_TYPE(int);
 KTR_ARGV_APPLICATION
 {
 	KTR::BitSet<std::uint32_t> bite;
-
-	int toto = 0;
-	toto &= ~0;
-
-	bite.Add(KTR::Bit<std::uint32_t>::EnumToBit<test,true>(titi)) ;
-	auto b = bite;
-	b.Toggle(1 << 2);
-	b.Remove(1 << 3);
-	auto b2 = bite - b;
-	std::cout << (b2.Has(1<<2))  ;
-
-
+	KTR::Random rd(100);
+	std::cout << rd.getRandom(1, 4) << std::endl;;
+	std::cout << rd.getRandom(1, 4) << std::endl;;
+	KTR::Random rd2(100);
+	std::cout << rd2.getRandom(1, 4) << std::endl;
+	std::cout << rd2.getRandom(1, 4) << std::endl;
 	KTR_APPLICATION_END;
 
 
