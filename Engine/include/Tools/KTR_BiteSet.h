@@ -6,15 +6,15 @@ namespace KTR
 	template<typename T> requires(std::is_integral_v<T>)
 	struct Bit
 	{
-		 static constexpr T ValToBit(T val);
+		[[nodiscard]] static constexpr T ValToBit(T val);
 
 		 template<typename Enum,bool isBit> requires(std::is_enum_v<Enum>&& std::is_same_v<T, std::underlying_type_t<Enum>>)
-			static constexpr T EnumToBit(Enum val);
+		[[nodiscard]] static constexpr T EnumToBit(Enum val);
 	};
 
 
 	template <typename T> requires (std::is_integral_v<T>)
-	constexpr T Bit<T>::ValToBit(T val)
+	[[nodiscard]]  constexpr T Bit<T>::ValToBit(T val)
 	{
 		return static_cast<T>(1) << val;
 	}
@@ -22,7 +22,7 @@ namespace KTR
 	template <typename T> requires (std::is_integral_v<T>)
 	template <typename Enum, bool isBit> requires (std::is_enum_v<Enum> && std::is_same_v<T, std::underlying_type_t<Enum
 		>>)
-	constexpr T Bit<T>::EnumToBit(Enum val)
+	[[nodiscard]] constexpr T Bit<T>::EnumToBit(Enum val)
 	{
 		if constexpr (isBit)
 			return static_cast<T>(val);
@@ -54,17 +54,17 @@ namespace KTR
 		void Toggle(value_type val);
 		template<typename... Ts> requires(... && std::is_same_v<Ts, T>)
 		void Toggles(Ts... val);
-		bool Has(value_type val) const;
+		[[nodiscard]] bool Has(value_type val) const;
 		template<typename... Ts> requires(... && std::is_same_v<Ts, T>)
-		bool HasAll(Ts... val);
+		[[nodiscard]] bool HasAll(Ts... val);
 		template<typename... Ts> requires(... && std::is_same_v<Ts, T>)
-		bool HasAny(Ts... val);
+		[[nodiscard]] bool HasAny(Ts... val);
 		void Clear();
-		bool operator==(const BitSet& other) const;
-		bool operator!=(const BitSet& other) const;
-		BitSet operator+(const BitSet& other) const;
+		[[nodiscard]] bool operator==(const BitSet& other) const;
+		[[nodiscard]] bool operator!=(const BitSet& other) const;
+		[[nodiscard]] BitSet operator+(const BitSet& other) const;
 		BitSet& operator+=(const BitSet& other);
-		BitSet operator-(const BitSet& other) const;
+		[[nodiscard]] BitSet operator-(const BitSet& other) const;
 		BitSet& operator-=(const BitSet& other);
 
 	private:
@@ -116,21 +116,21 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	bool BitSet<T>::Has(value_type val) const
+	[[nodiscard]] bool BitSet<T>::Has(value_type val) const
 	{
 		return (m_flag & val) != 0;
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
 	template <typename ... Ts> requires (... && std::is_same_v<Ts, T>)
-	bool BitSet<T>::HasAll(Ts... val)
+	[[nodiscard]] bool BitSet<T>::HasAll(Ts... val)
 	{
 		return (this->Has(val) &&  ...);
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
 	template <typename ... Ts> requires (... && std::is_same_v<Ts, T>)
-	bool BitSet<T>::HasAny(Ts... val)
+	[[nodiscard]] bool BitSet<T>::HasAny(Ts... val)
 	{
 		return (this->Has(val) ||  ...);
 	}
@@ -142,19 +142,19 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	bool BitSet<T>::operator==(const BitSet& other) const
+	[[nodiscard]] bool BitSet<T>::operator==(const BitSet& other) const
 	{
 		return m_flag == other.m_flag;
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	bool BitSet<T>::operator!=(const BitSet& other) const
+	[[nodiscard]] bool BitSet<T>::operator!=(const BitSet& other) const
 	{
 		return !(*this == other);
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	BitSet<T> BitSet<T>::operator+(const BitSet& other) const
+	[[nodiscard]] BitSet<T> BitSet<T>::operator+(const BitSet& other) const
 	{
 		auto tmp = *this;
 		tmp.m_flag |= other.m_flag;
@@ -169,7 +169,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	BitSet<T> BitSet<T>::operator-(const BitSet& other) const
+	[[nodiscard]] BitSet<T> BitSet<T>::operator-(const BitSet& other) const
 	{
 		auto tmp = *this;
 		tmp.m_flag &= ~other.m_flag;

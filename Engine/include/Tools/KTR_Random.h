@@ -28,13 +28,13 @@ namespace KTR
         Random();
         Random(seed_type val);
         template<typename T> requires(std::is_arithmetic_v<T>)
-        T getRandom(T min , T max);
+		[[nodiscard]] T getRandom(T min , T max);
         template<typename T> requires(std::is_arithmetic_v<T>)
-        std::vector<T> getRandoms(T min ,T max , size_t count);
+		[[nodiscard]] std::vector<T> getRandoms(T min ,T max , size_t count);
 
 
 		void SetSeed(seed_type val);
-        seed_type GetSeed() const;
+		[[nodiscard]] seed_type GetSeed() const;
 
     private:
         static std::random_device m_rd;
@@ -49,7 +49,7 @@ namespace KTR
 	{}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	T Random::getRandom(T min, T max)  
+	[[nodiscard]] T Random::getRandom(T min, T max)
 	{
 		if constexpr(std::is_integral_v<T>)
 		{
@@ -64,7 +64,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	std::vector<T> Random::getRandoms(T min, T max, size_t count)
+	[[nodiscard]] std::vector<T> Random::getRandoms(T min, T max, size_t count)
 	{
 		std::vector<T> result;
 		result.reserve(count);
@@ -81,7 +81,7 @@ namespace KTR
 		m_gen.seed(val);
 	}
 
-	inline Random::seed_type Random::GetSeed() const
+	[[nodiscard]] inline Random::seed_type Random::GetSeed() const
 	{
 		return m_seed;
 	}

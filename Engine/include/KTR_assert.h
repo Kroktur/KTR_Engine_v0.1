@@ -25,7 +25,7 @@ namespace KTR
 		((void)0);
 
 
-	struct BaseExcept
+	struct BaseExcept 
 	{
 		using msg_type = const char*;
 		static constexpr msg_type defaultValue = "Unknown exception";
@@ -84,6 +84,11 @@ namespace KTR
 		KTR_STATIC_ASSERT(std::is_base_of_v<CrtpExcept<Derived>, Derived>, "The type must inherit from crtp");
 		KTR_STATIC_ASSERT(ExceptCrtpType<Derived>, "Must implement the function WhatImpl()");
 	}
+
+
+
+
+
 }
 
 #endif

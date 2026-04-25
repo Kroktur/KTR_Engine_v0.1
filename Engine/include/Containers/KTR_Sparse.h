@@ -31,26 +31,26 @@ namespace KTR {
 		Sparse& operator=(const Sparse&) = default;
 		Sparse& operator=(Sparse&&) noexcept= default;
 	public:
-		bool Has(value_type e) const;
+		[[nodiscard]] bool Has(value_type e) const;
 		void Add(value_type e);
 		void Remove(value_type e);
 
 		template<Storage storage>
-		size_t Size() const;
+		[[nodiscard]] size_t Size() const;
 		template<Storage storage>
-		size_t  Capacity() const;
+		[[nodiscard]] size_t  Capacity() const;
 		template<Storage storage>
 		void Reserve(value_type size);
 
 		template<Storage storage>
-		value_type At(value_type index) const;
-		value_type operator[](value_type index) const;
+		[[nodiscard]] value_type At(value_type index) const;
+		[[nodiscard]] value_type operator[](value_type index) const;
 
-		const vector_type& Dense() const;
+		[[nodiscard]] const vector_type& Dense() const;
 
 		// std convention range loop
-		const_iterator_type begin() const;
-		const_iterator_type end() const;
+		[[nodiscard]] const_iterator_type begin() const;
+		[[nodiscard]] const_iterator_type end() const;
 
 		void Clear(); 
 	private:
@@ -60,7 +60,7 @@ namespace KTR {
 	};
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	bool Sparse<T>::Has(value_type e) const
+	[[nodiscard]] bool Sparse<T>::Has(value_type e) const
 	{
 		return m_sparse.size() > e && m_sparse[e] != invalidValue;
 	}
@@ -98,7 +98,7 @@ namespace KTR {
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
 	template <Storage storage>
-	size_t Sparse<T>::Size() const
+	[[nodiscard]] size_t Sparse<T>::Size() const
 	{
 		if constexpr (storage == Storage::DENSE)
 			return m_dense.size();
@@ -108,7 +108,7 @@ namespace KTR {
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
 	template <Storage storage>
-	size_t Sparse<T>::Capacity() const
+	[[nodiscard]] size_t Sparse<T>::Capacity() const
 	{
 		if constexpr (storage == Storage::DENSE)
 			return m_dense.capacity();
@@ -128,7 +128,7 @@ namespace KTR {
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
 	template <Storage storage>
-	typename Sparse<T>::value_type Sparse<T>::At(value_type index) const
+	[[nodiscard]] typename Sparse<T>::value_type Sparse<T>::At(value_type index) const
 	{
 		if constexpr (storage == Storage::DENSE)
 			return m_dense.at(index);
@@ -137,25 +137,25 @@ namespace KTR {
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	typename Sparse<T>::value_type Sparse<T>::operator[](value_type index) const
+	[[nodiscard]] typename Sparse<T>::value_type Sparse<T>::operator[](value_type index) const
 	{
 		return m_dense[index];
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	const typename Sparse<T>::vector_type& Sparse<T>::Dense() const
+	[[nodiscard]] const typename Sparse<T>::vector_type& Sparse<T>::Dense() const
 	{
 		return m_dense;
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	typename Sparse<T>::const_iterator_type Sparse<T>::begin() const
+	[[nodiscard]] typename Sparse<T>::const_iterator_type Sparse<T>::begin() const
 	{
 		return m_dense.begin();
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	typename Sparse<T>::const_iterator_type Sparse<T>::end() const
+	[[nodiscard]] typename Sparse<T>::const_iterator_type Sparse<T>::end() const
 	{
 		return m_dense.end();
 	}
