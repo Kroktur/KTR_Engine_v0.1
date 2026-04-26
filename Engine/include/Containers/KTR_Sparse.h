@@ -60,7 +60,7 @@ namespace KTR {
 	};
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	[[nodiscard]] bool Sparse<T>::Has(value_type e) const
+	bool Sparse<T>::Has(value_type e) const
 	{
 		return m_sparse.size() > e && m_sparse[e] != invalidValue;
 	}
@@ -98,7 +98,7 @@ namespace KTR {
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
 	template <Storage storage>
-	[[nodiscard]] size_t Sparse<T>::Size() const
+	 size_t Sparse<T>::Size() const
 	{
 		if constexpr (storage == Storage::DENSE)
 			return m_dense.size();
@@ -108,7 +108,7 @@ namespace KTR {
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
 	template <Storage storage>
-	[[nodiscard]] size_t Sparse<T>::Capacity() const
+	size_t Sparse<T>::Capacity() const
 	{
 		if constexpr (storage == Storage::DENSE)
 			return m_dense.capacity();
@@ -128,7 +128,7 @@ namespace KTR {
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
 	template <Storage storage>
-	[[nodiscard]] typename Sparse<T>::value_type Sparse<T>::At(value_type index) const
+	typename Sparse<T>::value_type Sparse<T>::At(value_type index) const
 	{
 		if constexpr (storage == Storage::DENSE)
 			return m_dense.at(index);
@@ -137,25 +137,25 @@ namespace KTR {
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	[[nodiscard]] typename Sparse<T>::value_type Sparse<T>::operator[](value_type index) const
+	typename Sparse<T>::value_type Sparse<T>::operator[](value_type index) const
 	{
 		return m_dense[index];
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	[[nodiscard]] const typename Sparse<T>::vector_type& Sparse<T>::Dense() const
+	const typename Sparse<T>::vector_type& Sparse<T>::Dense() const
 	{
 		return m_dense;
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	[[nodiscard]] typename Sparse<T>::const_iterator_type Sparse<T>::begin() const
+	typename Sparse<T>::const_iterator_type Sparse<T>::begin() const
 	{
 		return m_dense.begin();
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
-	[[nodiscard]] typename Sparse<T>::const_iterator_type Sparse<T>::end() const
+	typename Sparse<T>::const_iterator_type Sparse<T>::end() const
 	{
 		return m_dense.end();
 	}

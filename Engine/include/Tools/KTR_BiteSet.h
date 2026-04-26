@@ -14,7 +14,7 @@ namespace KTR
 
 
 	template <typename T> requires (std::is_integral_v<T>)
-	[[nodiscard]]  constexpr T Bit<T>::ValToBit(T val)
+	 constexpr T Bit<T>::ValToBit(T val)
 	{
 		return static_cast<T>(1) << val;
 	}
@@ -22,7 +22,7 @@ namespace KTR
 	template <typename T> requires (std::is_integral_v<T>)
 	template <typename Enum, bool isBit> requires (std::is_enum_v<Enum> && std::is_same_v<T, std::underlying_type_t<Enum
 		>>)
-	[[nodiscard]] constexpr T Bit<T>::EnumToBit(Enum val)
+	constexpr T Bit<T>::EnumToBit(Enum val)
 	{
 		if constexpr (isBit)
 			return static_cast<T>(val);
@@ -116,21 +116,21 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	[[nodiscard]] bool BitSet<T>::Has(value_type val) const
+	 bool BitSet<T>::Has(value_type val) const
 	{
 		return (m_flag & val) != 0;
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
 	template <typename ... Ts> requires (... && std::is_same_v<Ts, T>)
-	[[nodiscard]] bool BitSet<T>::HasAll(Ts... val)
+	bool BitSet<T>::HasAll(Ts... val)
 	{
 		return (this->Has(val) &&  ...);
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
 	template <typename ... Ts> requires (... && std::is_same_v<Ts, T>)
-	[[nodiscard]] bool BitSet<T>::HasAny(Ts... val)
+	 bool BitSet<T>::HasAny(Ts... val)
 	{
 		return (this->Has(val) ||  ...);
 	}
@@ -142,19 +142,19 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	[[nodiscard]] bool BitSet<T>::operator==(const BitSet& other) const
+	bool BitSet<T>::operator==(const BitSet& other) const
 	{
 		return m_flag == other.m_flag;
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	[[nodiscard]] bool BitSet<T>::operator!=(const BitSet& other) const
+	bool BitSet<T>::operator!=(const BitSet& other) const
 	{
 		return !(*this == other);
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	[[nodiscard]] BitSet<T> BitSet<T>::operator+(const BitSet& other) const
+	BitSet<T> BitSet<T>::operator+(const BitSet& other) const
 	{
 		auto tmp = *this;
 		tmp.m_flag |= other.m_flag;
@@ -169,7 +169,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_integral_v<T>)
-	[[nodiscard]] BitSet<T> BitSet<T>::operator-(const BitSet& other) const
+	BitSet<T> BitSet<T>::operator-(const BitSet& other) const
 	{
 		auto tmp = *this;
 		tmp.m_flag &= ~other.m_flag;

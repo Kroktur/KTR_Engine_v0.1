@@ -1,6 +1,7 @@
 #ifndef KTR_COUNTER_F	
 #define KTR_COUNTER_F
 #include <type_traits>
+#include "KTR_Assert.h"
 
 namespace KTR
 {
@@ -60,7 +61,10 @@ namespace KTR
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
 	Counter<T>::Counter(value_type min, value_type max, bool activeLoop): m_min(min),m_max(max),m_val(0),m_loopEnabled(activeLoop)
-	{}
+	{
+		if (min > max)
+			throw SpeExcept<std::out_of_range>("max need to be bigger than min");
+	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
 	Counter<T>& Counter<T>::operator++()
@@ -70,7 +74,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] Counter<T> Counter<T>::operator++(int)
+	Counter<T> Counter<T>::operator++(int)
 	{
 		Counter tmp = *this;
 		Plus();
@@ -85,7 +89,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] Counter<T> Counter<T>::operator--(int)
+	Counter<T> Counter<T>::operator--(int)
 	{
 		Counter tmp = *this;
 		Minus();
@@ -93,7 +97,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] Counter<T> Counter<T>::operator+(value_type value) const
+	Counter<T> Counter<T>::operator+(value_type value) const
 	{
 		Counter tmp = *this;
 		tmp.Plus(value);
@@ -108,7 +112,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] Counter<T> Counter<T>::operator-(value_type value) const
+	Counter<T> Counter<T>::operator-(value_type value) const
 	{
 		Counter tmp = *this;
 		tmp.Minus(value);
@@ -123,43 +127,43 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::operator==(value_type value) const
+	bool Counter<T>::operator==(value_type value) const
 	{
 		return m_val == value;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::operator!=(value_type value) const
+	bool Counter<T>::operator!=(value_type value) const
 	{
 		return !(*this == value);
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::operator<(value_type value) const
+	bool Counter<T>::operator<(value_type value) const
 	{
 		return m_val < value;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::operator<=(value_type value) const
+	bool Counter<T>::operator<=(value_type value) const
 	{
 		return m_val <= value;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::operator>(value_type value) const
+	bool Counter<T>::operator>(value_type value) const
 	{
 		return m_val > value;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::operator>=(value_type value) const
+	bool Counter<T>::operator>=(value_type value) const
 	{
 		return m_val >= value;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] bool Counter<T>::IsLooping() const
+	bool Counter<T>::IsLooping() const
 	{
 		return m_loopEnabled;
 	}
@@ -193,7 +197,7 @@ namespace KTR
 	void Counter<T>::SetMinMax(value_type min, value_type max)
 	{
 		if (min > max)
-			throw;
+			throw SpeExcept<std::out_of_range>("max need to be bigger than min");
 
 		m_min = min;
 		m_max = max;
@@ -205,19 +209,19 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] typename Counter<T>::value_type Counter<T>::Get() const
+	typename Counter<T>::value_type Counter<T>::Get() const
 	{
 		return m_val;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] typename Counter<T>::value_type Counter<T>::Max() const
+	typename Counter<T>::value_type Counter<T>::Max() const
 	{
 		return m_max;
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] typename Counter<T>::value_type Counter<T>::Min() const
+	typename Counter<T>::value_type Counter<T>::Min() const
 	{
 		return m_min;
 	}

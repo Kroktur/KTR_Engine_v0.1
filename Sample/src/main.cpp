@@ -1,8 +1,10 @@
 
 
 #include <iostream>
+#include <map>
 
 #include "KTR_Application.h"
+#include "Containers/KTR_HashMap.h"
 #include "Containers/KTR_Sparse.h"
 #include "Tools/KTR_RTTI.h"
 
@@ -10,7 +12,7 @@
 #include "Tools/KTR_Random.h"
 #include "Tools/KTR_Chrono.h"
 #include "Tools/KTR_Counter.h"
-
+#include "Tools/KTR_Allocator.h"
 enum  test : std::uint32_t
 {
 	toto = 1 << 0,
@@ -20,7 +22,6 @@ enum  test : std::uint32_t
 
 REGISTER_RTTI_TYPE(KTR::Sparse<std::uint32_t>);
 REGISTER_RTTI_TYPE(int);
-
 
 KTR_ARGV_APPLICATION
 {
@@ -48,7 +49,16 @@ KTR_ARGV_APPLICATION
 	KTR::Counter<float> counter(0,9);
 	counter.Loop(true);
 	counter += 20;
-	
+	KTR::HashMap<int, std::string> map;
+	map.Add(0,"toto");
+	map.Add(1, "toto2");
+
+	auto before = KTR::Allocate<std::shared_ptr<int>>(1);
+
+	auto test = KTR::Allocate<std::weak_ptr<int>>(before);
+	KTR::DeAllocate(test);
+	test = KTR::Allocate<std::weak_ptr<int>>(before);
+
 	std::cout << counter.Get() << std::endl;
 	KTR_APPLICATION_END;
 

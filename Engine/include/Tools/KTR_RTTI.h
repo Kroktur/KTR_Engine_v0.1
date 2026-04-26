@@ -49,7 +49,7 @@ namespace KTR
 		};
 
 		template <typename T>
-		[[nodiscard]] std::uint64_t Counter::GetId()
+		std::uint64_t Counter::GetId()
 		{
 			static std::uint64_t id = m_id++;
 			return id;
@@ -62,7 +62,7 @@ namespace KTR
 		};
 
 		template <RTTIType T>
-		[[nodiscard]] std::uint64_t Hasher::GetId()
+		std::uint64_t Hasher::GetId()
 		{
 			static std::string_view name = KTR::TypeName<T>::Name();
 			static std::uint64_t hash = HASH::FNV1aHash(name.data(), name.size());
@@ -86,13 +86,13 @@ namespace KTR
 		{}
 
 		template <typename T>
-		[[nodiscard]] std::uint64_t Instance<T>::GetInstance() const
+		std::uint64_t Instance<T>::GetInstance() const
 		{
 			return m_instanceID;
 		}
 
 		template <typename T>
-		[[nodiscard]] std::uint64_t Instance<T>::GetInstanceCount()
+		std::uint64_t Instance<T>::GetInstanceCount()
 		{
 			return m_lastInstance;
 		}

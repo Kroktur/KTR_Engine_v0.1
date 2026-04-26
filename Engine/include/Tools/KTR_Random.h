@@ -55,7 +55,7 @@ namespace KTR
 	{}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] T Random::getRandom(T min, T max)
+	 T Random::getRandom(T min, T max)
 	{
 		if constexpr(std::is_integral_v<T>)
 		{
@@ -70,7 +70,7 @@ namespace KTR
 	}
 
 	template <typename T> requires (std::is_arithmetic_v<T>)
-	[[nodiscard]] std::vector<T> Random::getRandoms(T min, T max, size_t count)
+	std::vector<T> Random::getRandoms(T min, T max, size_t count)
 	{
 		std::vector<T> result;
 		result.reserve(count);
@@ -87,7 +87,7 @@ namespace KTR
 		m_gen.seed(val);
 	}
 
-	[[nodiscard]] inline Random::seed_type Random::GetSeed() const
+	inline Random::seed_type Random::GetSeed() const
 	{
 		return m_seed;
 	}
