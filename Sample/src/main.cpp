@@ -9,6 +9,8 @@
 #include "Tools/KTR_BiteSet.h"
 #include "Tools/KTR_Random.h"
 #include "Tools/KTR_Chrono.h"
+#include "Tools/KTR_Counter.h"
+
 enum  test : std::uint32_t
 {
 	toto = 1 << 0,
@@ -43,7 +45,11 @@ KTR_ARGV_APPLICATION
 	std::cout << time2.AsRatio<KTR::TIME::nano_seconds_type>() << std::endl;;
 	std::cout << timer.GetTime().AsRatio<KTR::TIME::seconds_type>() << std::endl;
 
+	KTR::Counter<float> counter(0,9);
+	counter.Loop(true);
+	counter += 20;
+	
+	std::cout << counter.Get() << std::endl;
 	KTR_APPLICATION_END;
-
 
 }

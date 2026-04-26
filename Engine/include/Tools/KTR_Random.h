@@ -24,9 +24,15 @@ namespace KTR
 #else
 #error "KTR_64B ou KTR_32B doit être défini"
 #endif
-
+	public:
         Random();
         Random(seed_type val);
+		Random(const Random&) = default;
+		Random(Random&&) noexcept= default;
+		~Random() = default;
+		Random& operator=(const Random&) = default;
+		Random& operator=(Random&&) noexcept = default;
+	public:
         template<typename T> requires(std::is_arithmetic_v<T>)
 		[[nodiscard]] T getRandom(T min , T max);
         template<typename T> requires(std::is_arithmetic_v<T>)
