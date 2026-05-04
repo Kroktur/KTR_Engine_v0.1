@@ -10,13 +10,15 @@ namespace KTR
 	{
 		using value_type = T;
 		using ptr_type = T;
-		using raw_ptr_type = T;
+		using raw_ptr_type = T*;
+		using raw_ref_type = T&;
 		template<typename... Args>
 		[[nodiscard]] static ptr_type Allocate(Args&&... args);
 		static void DeAllocate(ptr_type& val);
 		static void Set(ptr_type& ptr, const value_type& val);
 		static void Set(ptr_type& ptr, value_type&& val);
 		[[nodiscard]] static raw_ptr_type ToPtr(ptr_type& ptr);
+		[[nodiscard]] static raw_ref_type ToRef(ptr_type& ptr);
 		static void Give(ptr_type& lhs, ptr_type& rhs);
 		static void Swap(ptr_type& lhs, ptr_type& rhs);
 		static void Free(ptr_type& ptr);
@@ -46,8 +48,15 @@ namespace KTR
 	template <typename T>
 	typename Allocator<T>::raw_ptr_type Allocator<T>::ToPtr(ptr_type& ptr)
 	{
+		return &ptr;
+	}
+
+	template <typename T>
+	typename Allocator<T>::raw_ref_type Allocator<T>::ToRef(ptr_type& ptr)
+	{
 		return ptr;
 	}
+
 	template <typename T>
 	void Allocator<T>::Give(ptr_type& lhs, ptr_type& rhs)
 	{
@@ -90,6 +99,7 @@ concept AllocatorType = requires()
 	typename KTR::Allocator<T>::value_type;
 	typename KTR::Allocator<T>::ptr_type;
 	typename KTR::Allocator<T>::raw_ptr_type;
+	typename KTR::Allocator<T>::raw_ref_type;
 };
 
 namespace KTR
@@ -102,12 +112,14 @@ namespace KTR
 		using value_type = T;
 		using ptr_type = T*;
 		using raw_ptr_type = ptr_type;
+		using raw_ref_type = T&;
 		template<typename... Args>
 		[[nodiscard]] static ptr_type Allocate(Args&&... args);
 		static void DeAllocate(ptr_type& val);
 		static void Set(ptr_type& ptr, const value_type& val);
 		static void Set(ptr_type& ptr, value_type&& val);
 		[[nodiscard]] static raw_ptr_type ToPtr(ptr_type& ptr);
+		[[nodiscard]] static raw_ref_type ToRef(ptr_type& ptr);
 		static void Give(ptr_type& lhs, ptr_type& rhs);
 		static void Swap(ptr_type& lhs, ptr_type& rhs);
 		static void Free(ptr_type& ptr);
@@ -151,6 +163,12 @@ namespace KTR
 	}
 
 	template <typename T>
+	typename Allocator<T*>::raw_ref_type Allocator<T*>::ToRef(ptr_type& ptr)
+	{
+		return *ptr;
+	}
+
+	template <typename T>
 	void Allocator<T*>::Give(ptr_type& lhs, ptr_type& rhs)
 	{
 		lhs = rhs;
@@ -183,13 +201,14 @@ namespace KTR
 		 using value_type = T;
 		 using ptr_type = std::unique_ptr<T>;
 		 using raw_ptr_type = T*;
+		 using raw_ref_type = T&;
 		 template< typename... Args>
 		 [[nodiscard]] static ptr_type Allocate(Args&&... args);
 
 		 static void DeAllocate(ptr_type& val);
 
 		 [[nodiscard]] static raw_ptr_type ToPtr(ptr_type& ptr);
-
+		 [[nodiscard]] static raw_ref_type ToRef(ptr_type& ptr);
 		 static void Set(ptr_type& ptr, const value_type& val);
 
 		 static void Set(ptr_type& ptr, value_type&& val);
@@ -222,6 +241,12 @@ namespace KTR
 	 typename Allocator<std::unique_ptr<T>>::raw_ptr_type Allocator<std::unique_ptr<T>>::ToPtr(ptr_type& ptr)
 	 {
 		 return ptr.get();
+	 }
+
+	 template <typename T>
+	 typename Allocator<std::unique_ptr<T>>::raw_ref_type Allocator<std::unique_ptr<T>>::ToRef(ptr_type& ptr)
+	 {
+		 return *ptr;
 	 }
 
 	 template <typename T>
@@ -269,6 +294,7 @@ namespace KTR
 		 using value_type = T;
 		 using ptr_type = std::shared_ptr<T>;
 		 using raw_ptr_type = T*;
+		 using raw_ref_type = T&;
 		 template< typename... Args>
 		 [[nodiscard]] static ptr_type Allocate(Args&&... args);
 
@@ -279,7 +305,7 @@ namespace KTR
 		 static void Set(ptr_type& ptr, value_type&& val);
 
 		 [[nodiscard]] static raw_ptr_type ToPtr(ptr_type& ptr);
-
+		 [[nodiscard]] static raw_ref_type ToRef(ptr_type& ptr);
 		 static void Give(ptr_type& lhs, ptr_type& rhs);
 
 		 static void Swap(ptr_type& lhs, ptr_type& rhs);
@@ -322,6 +348,12 @@ namespace KTR
 	 }
 
 	 template <typename T>
+	 typename Allocator<std::shared_ptr<T>>::raw_ref_type Allocator<std::shared_ptr<T>>::ToRef(ptr_type& ptr)
+	 {
+		 return *ptr;
+	 }
+
+	 template <typename T>
 	 void Allocator<std::shared_ptr<T>>::Give(ptr_type& lhs, ptr_type& rhs)
 	 {
 		 lhs = std::move(rhs);
@@ -354,6 +386,7 @@ namespace KTR
 		 using value_type = T;
 		 using ptr_type = std::weak_ptr<T>;
 		 using raw_ptr_type = T*;
+		 using raw_ref_type = T&;
 		 template<typename  Arg>
 		 [[nodiscard]] static ptr_type Allocate(Arg&& arg);
 

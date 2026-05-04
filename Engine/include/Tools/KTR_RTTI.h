@@ -3,7 +3,7 @@
 
 #include <atomic>
 #include <string_view>
-#include "KTR_Hasher.h"
+#include "Hash/KTR_Hasher.h"
 
 
 namespace KTR
@@ -25,7 +25,7 @@ namespace KTR										\
 			return #T;								\
 		}											\
 	};												\
-}											     		
+}
 
 template<typename T>
 concept RTTIType  = requires()
@@ -65,7 +65,7 @@ namespace KTR
 		std::uint64_t Hasher::GetId()
 		{
 			static std::string_view name = KTR::TypeName<T>::Name();
-			static std::uint64_t hash = HASH::FNV1aHash(name.data(), name.size());
+			static std::uint64_t hash = HASH::default_hash_type<std::string_view>::Hash(name);
 			return hash;
 		}
 

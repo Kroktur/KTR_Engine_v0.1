@@ -52,6 +52,8 @@ namespace KTR {
 		[[nodiscard]] const_iterator_type begin() const;
 		[[nodiscard]] const_iterator_type end() const;
 
+		[[nodiscard]] const_iterator_type CBegin() const;
+		[[nodiscard]] const_iterator_type CEnd() const;
 		void Clear(); 
 	private:
 		void ResizeSparse(value_type e);
@@ -158,6 +160,18 @@ namespace KTR {
 	typename Sparse<T>::const_iterator_type Sparse<T>::end() const
 	{
 		return m_dense.end();
+	}
+
+	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
+	typename Sparse<T>::const_iterator_type Sparse<T>::CBegin() const
+	{
+		return m_dense.cbegin();
+	}
+
+	template <typename T> requires (std::is_unsigned_v<T> && std::is_integral_v<T>)
+	typename Sparse<T>::const_iterator_type Sparse<T>::CEnd() const
+	{
+		return m_dense.cend();
 	}
 
 	template <typename T> requires (std::is_unsigned_v<T>&& std::is_integral_v<T>)

@@ -4,7 +4,8 @@
 #include <map>
 
 #include "KTR_Application.h"
-#include "Containers/KTR_HashMap.h"
+#include "Containers/KTR_CashRegistry.h"
+#include "Containers/HashMap/KTR_HashMap.h"
 #include "Containers/KTR_Sparse.h"
 #include "Tools/KTR_RTTI.h"
 
@@ -16,7 +17,7 @@
 enum  test : std::uint32_t
 {
 	toto = 1 << 0,
-	tata = 1<< 1,
+	tata = 1 << 1,
 	titi = 1 << 2
 };
 
@@ -51,15 +52,28 @@ KTR_ARGV_APPLICATION
 	counter += 20;
 	KTR::HashMap<int, std::string> map;
 	map.Add(0,"toto");
-	map.Add(1, "toto2");
+	map.Add(1, "toto");
+	map[0] = "toto3";
+	map.Remove(1);
 
 	auto before = KTR::Allocate<std::shared_ptr<int>>(1);
 
 	auto test = KTR::Allocate<std::weak_ptr<int>>(before);
 	KTR::DeAllocate(test);
 	test = KTR::Allocate<std::weak_ptr<int>>(before);
+	int testptr = 5;
+	auto& ptr  = KTR::Allocator<int>::ToRef(testptr);
+	ptr = 10;
 
+	std::cout << testptr << std::endl;
 	std::cout << counter.Get() << std::endl;
+
+
+	//KTR::CashRegistry<std::string, int> reg;
+	//reg.Reg("toto", std::make_unique<int>(5));
+	//std::cout << *reg.GetPtr("toto");
+	
+
 	KTR_APPLICATION_END;
 
 }
