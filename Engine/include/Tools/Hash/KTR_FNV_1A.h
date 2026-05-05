@@ -8,8 +8,6 @@ namespace KTR
 {
 	namespace HASH
 	{
-		
-
 		template<typename T>
 		using FNV_1A_32 = FNV_1A<T, std::uint32_t>;
 		template<typename T>

@@ -6,7 +6,6 @@
 #include "KTR_HashMapIt.h"
 #include <utility>
 #include <vector>
-
 #include <bit>
 
 #include "KTR_Assert.h"
@@ -39,6 +38,9 @@ namespace KTR
 	public:
 		[[nodiscard]] bool Has(const key_type& key) const;
 
+		[[nodiscard]] value_type* Find(const key_type& key);
+		[[nodiscard]] const value_type* Find(const key_type& key) const ;
+
 		void Add(const key_type& key, const value_type& value);
 
 		void Add(const key_type& key, value_type&& value);
@@ -48,30 +50,29 @@ namespace KTR
 		void AddOrSet(const key_type& key, const value_type& value);
 
 		void Remove(const key_type& key);
-		// TODO
-		//iterator_type Remove(iterator_type iterator);
+	
 		[[nodiscard]] size_t Size() const;
 		[[nodiscard]] bool Empty() const;
 
 		void Clear();
 
-		value_type& operator[](const key_type& key);
-		const value_type& operator[](const key_type& key) const;
-		value_type& At(const key_type& key);
-		const value_type& At(const key_type& key) const;
+		[[nodiscard]] value_type& operator[](const key_type& key);
+		[[nodiscard]] const value_type& operator[](const key_type& key) const;
+		[[nodiscard]] value_type& At(const key_type& key);
+		[[nodiscard]] const value_type& At(const key_type& key) const;
 
 
-		const_iterator_type begin() const;
+		[[nodiscard]] const_iterator_type begin() const;
 
-		const_iterator_type end() const;
+		[[nodiscard]] const_iterator_type end() const;
 
-		iterator_type begin();
+		[[nodiscard]] iterator_type begin();
 
-		iterator_type end();
+		[[nodiscard]] iterator_type end();
 
-		const_iterator_type CBegin() const;
+		[[nodiscard]] const_iterator_type CBegin() const;
 
-		const_iterator_type CEnd() const;
+		[[nodiscard]] const_iterator_type CEnd() const;
 
 	private:
 		void Resize();
@@ -138,6 +139,28 @@ namespace KTR
 
 			index = (index + 16) % m_data.size();
 		}
+	}
+
+	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	typename HashMap<KeyT, ValT, Hash>::value_type* HashMap<KeyT, ValT, Hash>::Find(const key_type& key)
+	{
+		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
+		if (result.first)
+		{
+			return &m_data[result.second].second;
+		}
+		return nullptr;
+	}
+
+	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	const typename HashMap<KeyT, ValT, Hash>::value_type* HashMap<KeyT, ValT, Hash>::Find(const key_type& key) const
+	{
+		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
+		if (result.first)
+		{
+			return &m_data[result.second].second;
+		}
+		return nullptr;
 	}
 
 	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
