@@ -3,7 +3,7 @@
 
 #include "KTR_FNV_1AIntegral.h"
 #include "KTR_FNV_1AString.h"
-
+#include "KTR_FNV_1APointer.h"
 namespace KTR
 {
 	namespace HASH

@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <map>
-
+#include "Tools/META/KTR_MetaTools.h"
 #include "KTR_Application.h"
 #include "Containers/KTR_CacheRegistry.h"
 #include "Containers/HashMap/KTR_HashMap.h"
@@ -30,6 +30,8 @@ REGISTER_RTTI_TYPE(int);
 struct TestTag{};
 
 
+KTR_DEFINE_HAS_MEMBER_VALUE(has_member_totorig, totorig);
+
 using  TestData = std::uint32_t;
 struct TestAccessor
 {
@@ -38,6 +40,13 @@ struct TestAccessor
 	{
 		std::uint64_t toto = KTR::HASH::FNV_1A_type<handler>::Hash(handler{});
 	}
+};
+
+
+
+struct TOTO
+{
+	static constexpr int totorig = 3;
 };
 
 
@@ -105,11 +114,14 @@ KTR_ARGV_APPLICATION
 	std::cout << handle2.GetData().gen << std::endl;;
 
 
-	//KTR::CashRegistry<std::string, int> reg;
-	//reg.Reg("toto", std::make_unique<int>(5));
-	//std::cout << *reg.GetPtr("toto");
-	
+	int tototestMap = 3;
 
+
+	KTR::HashMap<int*, std::string> maptest;
+	maptest.Add(&tototestMap, "tototo");
+	int tototestmapres = KTR::HASH::FNV_1A<int*, std::uint32_t>::Hash(&tototestMap);
+
+	KTR_STATIC_ASSERT(has_member_totorig_v<TOTO>,"toto")
 	KTR_APPLICATION_END;
 
 }
