@@ -4,7 +4,7 @@
 #include <atomic>
 #include <string_view>
 #include "Hash/KTR_Hasher.h"
-
+#include "META/KTR_MetaTools.h"
 
 namespace KTR
 {
@@ -35,8 +35,11 @@ concept RTTIType  = requires()
 
 
 
+KTR_DEFINE_HAS_MEMBER_TYPE(has_rtti_tag_type, rtti_tag_type)
 namespace KTR
 {
+
+
 	namespace RTTI
 	{
 		struct Counter
@@ -48,9 +51,30 @@ namespace KTR
 			static std::atomic_uint64_t m_id;
 		};
 
+		template<typename TagT> requires (has_rtti_tag_type_v<TagT>)
+		struct DedicatedCounter
+		{
+			using tag_type = TagT;
+			template<typename T>
+			[[nodiscard]] static std::uint64_t GetId();
+
+		private:
+			static std::atomic_uint64_t m_id;
+		};
+
+		
 		template <typename T>
 		std::uint64_t Counter::GetId()
 		{
+			static std::uint64_t id = m_id++;
+			return id;
+		}
+
+		template <typename TagT>requires (has_rtti_tag_type_v<TagT>)
+		template <typename T>
+		std::uint64_t DedicatedCounter<TagT>::GetId()
+		{
+
 			static std::uint64_t id = m_id++;
 			return id;
 		}
@@ -101,6 +125,11 @@ namespace KTR
 		std::atomic_uint64_t Instance<T>::m_lastInstance = 0;
 	}
 	inline std::atomic_uint64_t RTTI::Counter::m_id = 0;
+
+	
+
+	template<typename TagT> requires (has_rtti_tag_type_v<TagT>)
+	inline std::atomic_uint64_t RTTI::DedicatedCounter<TagT>::m_id = 0;
 }
 
 

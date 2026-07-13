@@ -1,4 +1,4 @@
-
+#include <functional>
 
 #include <iostream>
 #include <map>
@@ -16,6 +16,11 @@
 #include "Tools/KTR_Allocator.h"
 
 #include "Tools/KTR_Handler.h"
+
+#include <set>
+
+#include "Containers/KTR_EventBus.h"
+#include "Containers/KTR_HashSet.h"
 
 enum  test : std::uint32_t
 {
@@ -49,16 +54,154 @@ struct TOTO
 	static constexpr int totorig = 3;
 };
 
+struct FnPtr
+{
+	void testFunc(int)
+	{
+		std::cout << "function called succesful\n";
+	}
 
+};
+
+namespace KTR
+{
+	namespace HASH
+	{
+		template<typename	 R,typename... Args, typename HashBits> requires((std::is_same_v<HashBits, std::uint32_t> || std::is_same_v<HashBits, std::uint64_t>))
+			struct FNV_1A<R(*)(Args...), HashBits>
+		{
+			using hash_type = R(*)(Args...);
+			using FNV_1A_INFO_type = FNV_1A_INFO<HashBits>;
+			using return_hash_type = typename FNV_1A_INFO_type::return_hash_type;
+			[[nodiscard]] static constexpr return_hash_type Hash(hash_type val) {
+				return_hash_type hash = FNV_1A_INFO_type::Init();
+				const auto addr = reinterpret_cast<std::uintptr_t>(val);
+
+				for (size_t i = 0; i < sizeof(hash_type); ++i)
+				{
+					FNV_1A_INFO_type::ComputeByte(hash, static_cast<std::uint8_t>(addr >> (i * CHAR_BIT)));
+				}
+				return hash;
+			}
+			[[nodiscard]] constexpr return_hash_type operator()(hash_type val) const {
+				return FNV_1A::Hash(val);
+			}
+		};
+
+
+	}
+}
+
+
+
+
+struct TestEvent
+{};
+
+
+
+struct Listner1
+{
+	Listner1()
+	{
+		
+	}
+	~Listner1()
+	{
+	
+	}
+	static void TOTO(const TestEvent&)
+	{
+		std::cout << "event on staticTOTO" << std::endl;
+	}
+	void test(const TestEvent&)
+	{
+		std::cout << "event on Listner1" << std::endl;
+	}
+};
+
+
+
+struct Listner2
+{
+	Listner2()
+	{
+		
+	}
+	~Listner2()
+	{
+		
+	}
+	void test(const TestEvent&)
+	{
+		std::cout << "event on Listner2" << std::endl;
+	}
+};
+
+struct ObjListener
+{};
+struct StaticCallBack
+{};
+
+struct RunTimeCallBack
+{};
+
+
+
+struct EventBucket
+{
+	std::vector < ObjListener > list;
+	std::vector<StaticCallBack> list2;
+	std::vector<RunTimeCallBack> list3;
+
+};
+
+struct EventBus2p0
+{
+	template<typename EventType,typename T, void (T::* fn) (const EventType&)>
+	void SubScribe(T* obj)
+	{
+		std::uint64_t typeId = KTR::RTTI::Counter::GetId<EventType>();
+		if (!m_map.Has(typeId))
+			m_map[typeId] = EventBucket{};
+		EventBucket& bucket = m_map[typeId];
+
+ 	}
+
+
+	template<typename EventType>
+	void Notify(const EventType& event)
+	{
+		std::uint64_t typeId = KTR::RTTI::Counter::GetId<EventType>();
+		if (!m_map.Has(typeId))
+			return;
+		EventBucket& bucket = m_map[typeId];
+		// notify 
+	}
+
+	KTR::HashMap<std::uint64_t, EventBucket> m_map;
+};
+
+struct testalacon
+{
+	template<typename T>
+	static void toto()
+	{
+		
+	}
+};
 
 KTR_ARGV_APPLICATION
-{
+
+
+std::vector<int> ids;
+
 	KTR::TIME::Timer<float> timer(KTR::TIME::Now(),false);
 	
 	KTR::BitSet<std::uint32_t> bite;
 	KTR::Random rd(100);
-	std::cout << rd.getRandom(1, 4) << std::endl;;
-	std::cout << rd.getRandom(1, 4) << std::endl;;
+	std::cout << rd.getRandom(1, 4) << std::endl;
+	std::cout << rd.getRandom(1, 4) << std::endl;
 	KTR::Random rd2(100);
 	std::cout << rd2.getRandom(1, 4) << std::endl;
 	std::cout << rd2.getRandom(1, 4) << std::endl;
@@ -69,7 +212,14 @@ KTR_ARGV_APPLICATION
 	std::cout << time.AsRatio<KTR::TIME::micro_seconds_type>() << std::endl;;
 	std::cout << time.AsRatio<KTR::TIME::nano_seconds_type>() << std::endl;;
 
+	using ptr_type = void(FnPtr::*) (int);
 
+	ptr_type fn = &FnPtr::testFunc;
+	
+    
+
+	FnPtr ptrF;
+	(ptrF.*fn)(3);
 	KTR::TIME::Time<float> time2;
 	std::cout << time2.AsRatio<KTR::TIME::nano_seconds_type>() << std::endl;;
 	std::cout << timer.GetTime().AsRatio<KTR::TIME::seconds_type>() << std::endl;
@@ -97,7 +247,7 @@ KTR_ARGV_APPLICATION
 	std::cout << testptr << std::endl;
 	std::cout << counter.Get() << std::endl;
 
-
+	
 
 	KTR::CacheRegistry<std::string, int> reg;
 	auto handle = reg.Insert("toto", std::make_unique<int>(5));
@@ -120,8 +270,38 @@ KTR_ARGV_APPLICATION
 	KTR::HashMap<int*, std::string> maptest;
 	maptest.Add(&tototestMap, "tototo");
 	int tototestmapres = KTR::HASH::FNV_1A<int*, std::uint32_t>::Hash(&tototestMap);
+	
+	KTR_STATIC_ASSERT(has_member_totorig_v<TOTO>, "toto")
 
-	KTR_STATIC_ASSERT(has_member_totorig_v<TOTO>,"toto")
-	KTR_APPLICATION_END;
+		Listner1 l1;
+		Listner1 l1_2;
+		Listner2 l2;
 
-}
+		auto lambda = [&](const TestEvent&)
+			{
+				std::cout << "lambda called \n";
+			};
+
+	std::set<int > intset;
+	intset.insert(3);
+	intset.contains(3);
+	std::cout << std::endl;
+
+	using tp = KTR::Meta::typelist<TestEvent>;
+
+	KTR::EventBusCreate evb{};
+	evb.Register<tp>();
+	KTR::EventBus testBucket(std::move(evb));
+	testBucket.SubScribe< TestEvent , Listner1, &Listner1::test>(&l1);
+	testBucket.SubScribe<TestEvent,&Listner1::TOTO>();
+	testBucket.Subscribe<TestEvent>(&lambda);
+	testBucket.Notify<TestEvent>({  });
+	std::cout << std::endl;
+	//testBucket.UnSubscribe(&l1);
+	testBucket.UnSubscribe<TestEvent,&Listner1::TOTO>();
+	testBucket.UnSubscribe<TestEvent>(&lambda);
+	testBucket.Notify<TestEvent>({  });
+
+	KTR_APPLICATION_END
+
+

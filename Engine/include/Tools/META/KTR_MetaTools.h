@@ -1,7 +1,7 @@
 #ifndef KTR_METATOOLS_F
 #define KTR_METATOOLS_F
 
-namespace KTR
+namespace KTR::Meta
 {
 	template<typename T>
 	struct type_container
@@ -63,10 +63,10 @@ namespace KTR
 
 #define KTR_DEFINE_HAS_MEMBER_TYPE(trait_name, member_name)           \
     template<typename T, typename T2 = void>                          \
-    struct trait_name : KTR::false_type {};                           \
+    struct trait_name : KTR::Meta::false_type {};                     \
     template<typename T>                                              \
-    struct  trait_name<T, KTR::alias_void_t<                          \
-        typename T::member_name>> : KTR::true_type {};                \
+    struct  trait_name<T, KTR::Meta::alias_void_t<                    \
+        typename T::member_name>> : KTR::Meta::true_type {};          \
     template<typename T>                                              \
     static constexpr bool trait_name##_v = trait_name<T>::value;      \
 	template<typename T>                                              \
@@ -75,10 +75,10 @@ namespace KTR
 
 #define KTR_DEFINE_HAS_MEMBER_VALUE(trait_name, member_name)          \
     template<typename T, typename T2 = void>                          \
-    struct trait_name : KTR::false_type {};                           \
+    struct trait_name : KTR::Meta::false_type {};                     \
     template<typename T>                                              \
-    struct  trait_name<T, KTR::alias_void_t<                          \
-        decltype(T::member_name)>> : KTR::true_type {};               \
+    struct  trait_name<T, KTR::Meta::alias_void_t<                    \
+        decltype(T::member_name)>> : KTR::Meta::true_type {};         \
     template<typename T>                                              \
     static constexpr bool trait_name##_v = trait_name<T>::value;      \
 	template<typename T>                                              \

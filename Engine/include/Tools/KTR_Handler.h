@@ -10,7 +10,6 @@
 namespace KTR
 {
 
-
 	template<typename Tag, typename DataLoad, typename Accessor>
 	class Handle
 	{

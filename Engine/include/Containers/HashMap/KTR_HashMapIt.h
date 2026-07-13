@@ -23,10 +23,10 @@ namespace KTR
 
 
 		MapIterator(const MapIterator&) = default;
-		MapIterator(MapIterator&&) = default;
+		MapIterator(MapIterator&&) noexcept = default;
 		~MapIterator() = default;
 		MapIterator& operator=(const MapIterator&) = default;
-		MapIterator& operator=(MapIterator&&) = default;
+		MapIterator& operator=(MapIterator&&) noexcept = default;
 		MapIterator(pointer current, meta_pointer_type currentMeta, pointer end) : m_current(current), m_currentMeta(currentMeta), m_end(end) {}
 		MapIterator(pointer current, meta_pointer_type currentMeta, pointer end, begin_flag) : m_current(current), m_currentMeta(currentMeta), m_end(end)
 		{

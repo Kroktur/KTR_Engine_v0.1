@@ -4,11 +4,20 @@
 #include "KTR_MetaTools.h"
 #include <type_traits>
 
-namespace KTR
+template<typename fn>
+concept is_typelist_callable_RT = requires(fn && fn_)
+{
+	fn_.template operator()<int>();
+};
+
+namespace KTR::Meta
 {
 	template<typename ... Args>
 	struct typelist
 	{};
+
+	
+
 
 	//Front
 	template <typename List>
@@ -292,6 +301,25 @@ namespace KTR
 
 	template<typename Type>
 	static constexpr bool is_type_list_v = is_type_list <Type>::value;
+
+
+
+	template<typename List>
+	struct RunTime;
+
+	template<typename ... Args>
+	struct RunTime<typelist<Args...>>
+	{
+		using typelist_type = typelist<Args...>;
+		template<typename fn> requires(is_typelist_callable_RT<fn>)
+		static void for_each(fn&& fn_)
+		{
+			(fn_.template operator() < Args > (), ...);
+		}
+	};
+
+
+
 }
 
 #endif
