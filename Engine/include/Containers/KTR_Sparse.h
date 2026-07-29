@@ -30,6 +30,8 @@ namespace KTR {
 		Sparse(Sparse&&) noexcept = default;
 		Sparse& operator=(const Sparse&) = default;
 		Sparse& operator=(Sparse&&) noexcept= default;
+		bool operator==(const Sparse&) const = default;
+		bool operator!=(const Sparse&) const = default;
 	public:
 		[[nodiscard]] bool Has(value_type e) const;
 		void Add(value_type e);
@@ -44,11 +46,13 @@ namespace KTR {
 
 		template<Storage storage>
 		[[nodiscard]] value_type At(value_type index) const;
+		
 		[[nodiscard]] value_type operator[](value_type index) const;
 
 		[[nodiscard]] const vector_type& Dense() const;
 
 		// std convention range loop
+
 		[[nodiscard]] const_iterator_type begin() const;
 		[[nodiscard]] const_iterator_type end() const;
 

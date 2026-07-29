@@ -30,7 +30,8 @@ namespace KTR
 		MapIterator(pointer current, meta_pointer_type currentMeta, pointer end) : m_current(current), m_currentMeta(currentMeta), m_end(end) {}
 		MapIterator(pointer current, meta_pointer_type currentMeta, pointer end, begin_flag) : m_current(current), m_currentMeta(currentMeta), m_end(end)
 		{
-			Advance();
+			if (m_currentMeta != nullptr && (*m_currentMeta & EMPTY) != 0)
+				Advance();
 		}
 
 	public:
@@ -60,9 +61,9 @@ namespace KTR
 		[[nodiscard]] bool operator!=(const MapIterator& other) const
 		{
 			return !(*this == other);
-		}
+		}	
 	private:
-
+		
 		void Advance()
 		{
 			while (m_current < m_end)

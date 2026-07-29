@@ -8,13 +8,15 @@
 #include "KTR_Sparse.h"
 namespace KTR
 {
-	template<typename T,size_t allocCount> requires(std::is_integral_v<T> && allocCount > 0)
+	template<typename T> requires(std::is_integral_v<T>)
 	class IdPool
 	{
 	public:
 		using id_type = T;
 		using container_type = KTR::Sparse<id_type>;
 		using vector_type = std::vector<id_type>;
+		static constexpr id_type invalidValue = std::numeric_limits<id_type>::max();
+
 	public:
 		IdPool();
 		IdPool(const IdPool&) = default;
@@ -23,86 +25,96 @@ namespace KTR
 		IdPool& operator=(const IdPool&) = default;
 		IdPool& operator=(IdPool&&) noexcept= default;
 	public:
-		[[nodiscard]] bool HasId(id_type id) const;
+		[[nodiscard]] bool IsAlive(id_type id) const;
+		[[nodiscard]] vector_type AcqIds(const id_type count);
 		[[nodiscard]] id_type AcqId();
 		[[nodiscard]] size_t Size() const;
 		[[nodiscard]] size_t MaxSize() const;
+
 		void FreeId(id_type id);
+		void FreeIds(const vector_type& vec);
 		void Clear();
+
 	private:
-		void FillWithId();
 		container_type m_sparse;
-		vector_type m_freeId;
+		vector_type m_recycling;
 		id_type m_nextId;
 	};
 
-	template <typename T, size_t allocCount> requires(std::is_integral_v<T>&& allocCount > 0)
-	IdPool<T, allocCount>::IdPool() : m_nextId(0)
-	{ FillWithId(); }
 
-	
-
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	bool IdPool<T, allocCount>::HasId(id_type id) const
+	template <typename T> requires (std::is_integral_v<T>)
+	IdPool<T>::IdPool(): m_nextId(static_cast<id_type>(0))
 	{
-		return m_sparse.Has(id);
-	}
-
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	typename IdPool<T, allocCount>::id_type IdPool<T, allocCount>::AcqId()
-	{
-		if (m_freeId.empty())
-			FillWithId();
 			
-		id_type id = m_freeId.back();
-		m_freeId.pop_back();
-		m_sparse.Add(id);
-		return id;
 	}
 
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	size_t IdPool<T, allocCount>::Size() const 
+	template <typename T> requires (std::is_integral_v<T>)
+	bool IdPool<T>::IsAlive(id_type id) const
 	{
-		return m_sparse.template Size<Storage::DENSE>();
+		return id < m_nextId && !m_sparse.Has(id);
 	}
 
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	size_t IdPool<T, allocCount>::MaxSize() const
+	template <typename T> requires (std::is_integral_v<T>)
+	typename IdPool<T>::vector_type IdPool<T>::AcqIds(const id_type count)
+	{
+		vector_type ids;
+		for (id_type i = 0; i < count; ++i)
+			ids.push_back(this->AcqId());
+		return ids;
+	}
+
+	template <typename T> requires (std::is_integral_v<T>)
+	typename IdPool<T>::id_type IdPool<T>::AcqId()
+	{
+		id_type e;
+		if (!m_recycling.empty())
+		{
+			m_sparse.Remove(m_recycling.back());
+			e = m_recycling.back();
+			m_recycling.pop_back();
+		}
+		else
+		{
+			if (m_nextId == invalidValue)
+				throw SpeExcept<std::out_of_range>("IdPool exhausted");
+
+			e = m_nextId++;
+		}
+		return e;
+	}
+
+	template <typename T> requires (std::is_integral_v<T>)
+	size_t IdPool<T>::Size() const
+	{
+		return m_nextId - m_recycling.size();
+	}
+
+	template <typename T> requires (std::is_integral_v<T>)
+	size_t IdPool<T>::MaxSize() const
 	{
 		return m_nextId;
 	}
 
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	void IdPool<T, allocCount>::FreeId(id_type id)
+	template <typename T> requires (std::is_integral_v<T>)
+	void IdPool<T>::FreeId(id_type id)
 	{
-		if (!m_sparse.Has(id))
-			throw SpeExcept<std::out_of_range>("id not register");
-		m_sparse.Remove(id);
-		m_freeId.push_back(id);
+		m_recycling.push_back(id);
+		m_sparse.Add(id);
 	}
 
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	void IdPool<T, allocCount>::Clear()
+	template <typename T> requires (std::is_integral_v<T>)
+	void IdPool<T>::FreeIds(const vector_type& vec)
 	{
-		m_nextId = 0;
+		for (const id_type e : vec)
+			this->FreeId(e);
+	}
+
+	template <typename T> requires (std::is_integral_v<T>)
+	void IdPool<T>::Clear()
+	{
 		m_sparse.Clear();
-		m_freeId.clear();
-	}
-
-	template <typename T, size_t allocCount> requires (std::is_integral_v<T> && allocCount > 0)
-	void IdPool<T, allocCount>::FillWithId()
-	{
-		if (m_nextId > std::numeric_limits<id_type>::max() - (allocCount - 1))
-			throw SpeExcept<std::out_of_range>("IdPool exhausted");
-
-		size_t oldSize = m_freeId.size();
-		m_freeId.resize(oldSize + allocCount);
-
-		// if 0 start at 0 
-		id_type start = m_nextId;
-		for (size_t i = 0; i < allocCount; ++i)
-			m_freeId[oldSize + i] = start +(allocCount - 1 - i);
-		m_nextId += allocCount ;
+		m_recycling.clear();
+		m_nextId = static_cast<id_type>(0);
 	}
 }
 

@@ -5,7 +5,7 @@
 
 #include "Tools/KTR_RTTI.h"
 #include "Tools/META/KTR_TypeList.h"
-
+#include "Containers/HashMap/KTR_HashMap.h"
 namespace KTR
 {
 
@@ -142,14 +142,30 @@ namespace KTR
 
 	struct EventBusCreate
 	{
+	public:
+		EventBusCreate() = default;
+		~EventBusCreate()
+		{
+			for (auto& it : m_buckets)
+				if (it.second.ptr != nullptr)
+					it.second.destroy(it.second.ptr);
+		}
+		EventBusCreate(const EventBusCreate&) = delete;
+		EventBusCreate(EventBusCreate&&) noexcept = default;
+		EventBusCreate& operator=(const EventBusCreate&) = delete;
+		EventBusCreate& operator=(EventBusCreate&&) noexcept = default;
+	public:
+		using key_type = std::uint64_t;
+		using value_type = BucketEntry;
+		using rtti_flag_type = EventBusTagRTTI;
 		friend EventBus;
-		using rtti_type = RTTI::DedicatedCounter<EventBusTagRTTI>;
+		using rtti_type = RTTI::DedicatedCounter<rtti_flag_type>;
 		template<typename List> requires(Meta::is_type_list_v<List>)
 			void Register()
 		{
 			auto lb = [&]<typename EventType>() {
 			
-				std::uint64_t id = rtti_type::GetId<EventType>();
+				key_type id = rtti_type::GetId<EventType>();
 				if (m_buckets.Has(id))
 					return;
 				
@@ -165,7 +181,7 @@ namespace KTR
 			Meta::RunTime<List>::for_each(lb);
 		}
 		private:
-			HashMap<std::uint64_t, BucketEntry> m_buckets;
+			HashMap<key_type, value_type> m_buckets;
 	};
 
 	struct EventBus
@@ -184,14 +200,18 @@ namespace KTR
 		EventBus& operator=(const EventBus&) = delete;
 		EventBus& operator=(EventBus&&) noexcept = default;
 	public:
-		using rtti_type = RTTI::DedicatedCounter<EventBusTagRTTI>;
+		using key_type = std::uint64_t;
+		using value_type = BucketEntry;
+		using rtti_flag_type = EventBusTagRTTI;
+		using rtti_type = RTTI::DedicatedCounter<rtti_flag_type>;		
+		using map_type = HashMap<key_type, value_type>;
 	public:
 
 		template<typename EventType, typename T, void (T::* fn) (const EventType&)>
 		void SubScribe(T* obj)
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits <key_type>::max())
 			{
 				//TODO log
 				return;
@@ -202,8 +222,8 @@ namespace KTR
 		template<typename EventType, void (*fn)(const EventType&)>
 		void SubScribe()
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits <key_type>::max())
 			{
 				//TODO log
 				return;
@@ -214,8 +234,8 @@ namespace KTR
 		template<typename EventType, typename T> requires(std::is_invocable_v<T, const EventType&>)
 			void Subscribe(T* lambdaPtr)
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits < key_type>::max())
 			{
 				//TODO log
 				return;
@@ -227,8 +247,8 @@ namespace KTR
 		template<typename EventType, typename T>
 		void UnSubscribe(T* obj)
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits < key_type>::max())
 			{
 				//TODO log
 				return;
@@ -238,8 +258,8 @@ namespace KTR
 		template<typename EventType, typename T> requires(std::is_invocable_v<T, const EventType&>)
 			void UnSubscribe(T* lambdaPtr)
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits < key_type>::max())
 			{
 				//TODO log
 				return;
@@ -249,8 +269,8 @@ namespace KTR
 		template<typename EventType, void (*fn)(const EventType&)>
 		void UnSubscribe()
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits < key_type>::max())
 			{
 				//TODO log
 				return;
@@ -260,8 +280,8 @@ namespace KTR
 		template<typename EventType>
 		void Notify(const EventType& event) const
 		{
-			std::uint64_t id = GetID<EventType>();
-			if (id == std::numeric_limits < std::uint64_t>::max())
+			key_type id = GetID<EventType>();
+			if (id == std::numeric_limits < key_type>::max())
 			{
 				//TODO log
 				return;
@@ -270,16 +290,16 @@ namespace KTR
 		}
 	private:
 		template<typename EventType>
-		std::uint64_t GetID() const 
+		key_type GetID() const
 		{
-			std::uint64_t id = rtti_type::GetId<EventType>();
+			key_type id = rtti_type::GetId<EventType>();
 			if (!m_buckets.Has(id))
-				return std::numeric_limits < std::uint64_t >::max();
+				return std::numeric_limits < key_type >::max();
 			return id;
 		}
 
 	private:
-		HashMap<std::uint64_t, BucketEntry> m_buckets;
+		map_type m_buckets;
 	};
 
 }

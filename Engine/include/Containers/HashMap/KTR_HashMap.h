@@ -31,7 +31,7 @@ namespace KTR
 		static constexpr uint8_t HASH_MASK = 0x7F;
 		static constexpr uint8_t DELETED = 0xFE;
 		static constexpr float maxLoadFactor = 0.65f;
-
+		static constexpr hidden_key_type invalidIndex = std::numeric_limits<hidden_key_type>::max();
 	public:
 		HashMap();
 		~HashMap() = default;
@@ -170,10 +170,11 @@ namespace KTR
 	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
 		void HashMap<KeyT, ValT, Hash>::Add(const key_type& key, const value_type& value)
 	{
+
 			KTR_DEBUG_ASSERT(this->Has(key) != true && "entity already added")
 
-		float loadFactor = static_cast<float>(m_size) / static_cast<float>(m_data.size());
-		while (loadFactor > maxLoadFactor)
+	
+		while (static_cast<float>(m_size) / static_cast<float>(m_data.size()) > maxLoadFactor)
 			Resize();
 
 		hidden_key_type hash = this->HashFn(key);
@@ -374,7 +375,7 @@ namespace KTR
 			SIMD_HELPER::pack_type emptyCompPack = SIMD_HELPER::Versus(emptyPack, groupPack);
 			hidden_key_type emptyMask = SIMD_HELPER::Mask<hidden_key_type>(emptyCompPack);
 			if (emptyMask != 0)
-				return { false, -1 };
+				return { false, invalidIndex };
 
 			index = (index + 16) % m_data.size();
 		}
