@@ -89,7 +89,7 @@ namespace KTR
 		std::uint64_t Hasher::GetId()
 		{
 			static std::string_view name = KTR::TypeName<T>::Name();
-			static std::uint64_t hash = HASH::default_hash_type<std::string_view>::Hash(name);
+			static std::uint64_t hash = hash::default_hash_type<std::string_view>::Hash(name);
 			return hash;
 		}
 

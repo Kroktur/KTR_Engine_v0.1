@@ -13,7 +13,7 @@
 
 namespace KTR
 {
-	template<typename KeyT, typename ValT, template<typename >class Hash = HASH::default_hash_type> requires(ValidHashOpp<KeyT,Hash>)
+	template<typename KeyT, typename ValT,typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		class HashMap
 	{
 	public:
@@ -23,7 +23,7 @@ namespace KTR
 		using data_container_type = std::vector<data_type>;
 		using meta_type = std::uint8_t;
 		using meta_container_type = std::vector<std::uint8_t>;
-		using hash_type = Hash<key_type>;
+		using hash_type = Hash;
 		using hidden_key_type = typename hash_type::return_hash_type;
 		using iterator_type = MapIterator<key_type, value_type, false>;
 		using const_iterator_type = MapIterator<key_type, value_type, true>;
@@ -105,14 +105,14 @@ namespace KTR
 		static hash_type m_hash;
 	};
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		HashMap<KeyT, ValT, Hash>::HashMap() : m_data(), m_size(0)
 	{
 		m_data.resize(64, data_type{});
 		m_metaData.resize(64, EMPTY);
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		bool HashMap<KeyT, ValT, Hash>::Has(const key_type& key) const
 	{
 		hidden_key_type hash = this->HashFn(key);
@@ -145,8 +145,8 @@ namespace KTR
 		}
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
-	typename HashMap<KeyT, ValT, Hash>::value_type* HashMap<KeyT, ValT, Hash>::Find(const key_type& key)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
+		typename HashMap<KeyT, ValT, Hash>::value_type* HashMap<KeyT, ValT, Hash>::Find(const key_type& key)
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
 		if (result.first)
@@ -156,8 +156,8 @@ namespace KTR
 		return nullptr;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
-	const typename HashMap<KeyT, ValT, Hash>::value_type* HashMap<KeyT, ValT, Hash>::Find(const key_type& key) const
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
+		const typename HashMap<KeyT, ValT, Hash>::value_type* HashMap<KeyT, ValT, Hash>::Find(const key_type& key) const
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
 		if (result.first)
@@ -167,7 +167,7 @@ namespace KTR
 		return nullptr;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::Add(const key_type& key, const value_type& value)
 	{
 
@@ -182,7 +182,7 @@ namespace KTR
 		this->InsertWithHash(hash, fingerPrint, { key,value });
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::Add(const key_type& key, value_type&& value)
 	{
 		KTR_DEBUG_ASSERT(this->Has(key) != true && "entity already added")
@@ -196,7 +196,7 @@ namespace KTR
 		this->InsertWithHash(hash, fingerPrint, { key, std::move(value) });
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::AddOrSet(const key_type& key, value_type&& value)
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
@@ -208,7 +208,7 @@ namespace KTR
 			this->Add(key, std::move(value));
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::AddOrSet(const key_type& key, const value_type& value)
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
@@ -220,7 +220,7 @@ namespace KTR
 			this->Add(key, value);
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::Remove(const key_type& key)
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
@@ -236,19 +236,19 @@ namespace KTR
 
 	
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		size_t HashMap<KeyT, ValT, Hash>::Size() const
 	{
 		return m_size;
 	}
-
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		bool HashMap<KeyT, ValT, Hash>::Empty() const
 	{
 		return m_size == 0;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::Clear()
 	{
 		m_size = 0;
@@ -258,7 +258,7 @@ namespace KTR
 		m_metaData.resize(64, EMPTY);
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::value_type& HashMap<KeyT, ValT, Hash>::operator[](const key_type& key)
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
@@ -267,7 +267,7 @@ namespace KTR
 		
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		const typename HashMap<KeyT, ValT, Hash>::value_type& HashMap<KeyT, ValT, Hash>::operator[](
 			const key_type& key) const
 	{
@@ -276,7 +276,7 @@ namespace KTR
 			return m_data[result.second].second;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::value_type& HashMap<KeyT, ValT, Hash>::At(const key_type& key)
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
@@ -284,7 +284,7 @@ namespace KTR
 			return m_data[result.second].second;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		const typename HashMap<KeyT, ValT, Hash>::value_type& HashMap<KeyT, ValT, Hash>::At(const key_type& key) const
 	{
 		std::pair<bool, hidden_key_type> result = this->PrivateHas(key);
@@ -292,43 +292,43 @@ namespace KTR
 			return m_data[result.second].second;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::const_iterator_type HashMap<KeyT, ValT, Hash>::begin() const
 	{
 		return const_iterator_type(m_data.data(), m_metaData.data(), m_data.data() + m_data.size(), const_iterator_type::begin_flag());
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::const_iterator_type HashMap<KeyT, ValT, Hash>::end() const
 	{
 		return const_iterator_type(m_data.data() + m_data.size(), m_metaData.data() + m_metaData.size(), m_data.data() + m_data.size());
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::iterator_type HashMap<KeyT, ValT, Hash>::begin()
 	{
 		return iterator_type(m_data.data(), m_metaData.data(), m_data.data() + m_data.size(), const_iterator_type::begin_flag());
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::iterator_type HashMap<KeyT, ValT, Hash>::end()
 	{
 		return iterator_type(m_data.data() + m_data.size(), m_metaData.data() + m_metaData.size(), m_data.data() + m_data.size());
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::const_iterator_type HashMap<KeyT, ValT, Hash>::CBegin() const
 	{
 		return const_iterator_type(m_data.data(), m_metaData.data(), m_data.data() + m_data.size(), const_iterator_type::begin_flag());
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::const_iterator_type HashMap<KeyT, ValT, Hash>::CEnd() const
 	{
 		return const_iterator_type(m_data.data() + m_data.size(), m_metaData.data() + m_metaData.size(), m_data.data() + m_data.size());
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::Resize()
 	{
 		data_container_type oldData = std::move(m_data);
@@ -347,7 +347,7 @@ namespace KTR
 		}
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		std::pair<bool, typename HashMap<KeyT, ValT, Hash>::hidden_key_type> HashMap<KeyT, ValT, Hash>::PrivateHas(
 			const key_type& key) const
 	{
@@ -381,33 +381,33 @@ namespace KTR
 		}
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		constexpr typename HashMap<KeyT, ValT, Hash>::hidden_key_type HashMap<KeyT, ValT, Hash>::HashFn(const key_type& key)
 	{
 		return m_hash(key);
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::hidden_key_type HashMap<KeyT, ValT, Hash>::GroupIndex(
 			hidden_key_type hash) const
 	{
 		return (hash % (m_data.size() / 16)) * 16;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		constexpr typename HashMap<KeyT, ValT, Hash>::meta_type HashMap<KeyT, ValT, Hash>::FingerPrint(hidden_key_type hash)
 	{
 		return  hash & HASH_MASK;
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::InsertWithHash(hidden_key_type hash, meta_type fp, data_type&& pair)
 	{
 		hidden_key_type index = this->GroupIndex(hash);
 		this->InsertWithHashIndex(index, fp, std::move(pair));
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::InsertWithHashIndex(hidden_key_type index, meta_type fp, data_type&& pair)
 	{
 		while (true)
@@ -438,14 +438,14 @@ namespace KTR
 		}
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::InsertWithHash(hidden_key_type hash, meta_type fp, const data_type& pair)
 	{
 		hidden_key_type index = this->GroupIndex(hash);
 		this->InsertWithHashIndex(index, fp, pair);
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		void HashMap<KeyT, ValT, Hash>::InsertWithHashIndex(hidden_key_type index, meta_type fp, const data_type& pair)
 	{
 		while (true)
@@ -477,13 +477,13 @@ namespace KTR
 		}
 	}
 
-	template <typename KeyT, typename ValT, template <typename> class Hash> requires (ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		constexpr bool HashMap<KeyT, ValT, Hash>::IsUnoccupied(std::uint8_t fp)
 	{
 		return (fp & EMPTY) != 0;
 	}
 
-	template<typename KeyT, typename ValT, template<typename >class Hash> requires(ValidHashOpp<KeyT, Hash>)
+	template<typename KeyT, typename ValT, typename Hash = hash::default_hash_type<KeyT>> requires(KTR_ValidHasher<Hash>)
 		typename HashMap<KeyT, ValT, Hash>::hash_type  HashMap<KeyT, ValT, Hash>::m_hash = {};
 }
 
