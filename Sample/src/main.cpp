@@ -622,4 +622,7 @@ int main(int argc, char* argv[])
 
 	//KTR::HashMap< int , int,totorigolo<std::uint64_t>> tooto;
 	//tooto.Add(	new std::string("tt"), 3);
+
+
+	
 }
