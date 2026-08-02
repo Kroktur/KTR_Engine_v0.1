@@ -1,5 +1,7 @@
 
 #include <iostream>
+
+#include "Tools/META/KTR_TypeList.h"
 //#include <functional>
 //
 //#include <iostream>
@@ -618,8 +620,15 @@ struct testHASH
 int main(int argc, char* argv[])
 {
 	testHASH<totorigolo<std::uint64_t>>();
-	std::cout << KTR::hash::default_hash_type<testEnumClass>::Hash(testEnumClass::e2);
+	std::cout << KTR::hash::default_hash_type<testEnumClass>::Hash(testEnumClass::e2) << std::endl;;
 
+	using tl = KTR::Meta::typelist<int, float, double,float,float,double>;
+
+	using unique = KTR::Meta::unique_t< tl>;
+
+	KTR::Meta::RunTime<unique>::for_each_index([]<typename T>(std::uint64_t index) ->void {
+		std::cout << index << std::endl;
+	});
 	//KTR::HashMap< int , int,totorigolo<std::uint64_t>> tooto;
 	//tooto.Add(	new std::string("tt"), 3);
 

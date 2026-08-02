@@ -1,22 +1,25 @@
+
+
+
+
 #ifndef KTR_TYPELIST_F
 #define KTR_TYPELIST_F
 
 #include "KTR_MetaTools.h"
 #include <type_traits>
+#include <tuple>
+#include <variant>
 
-template<typename fn>
-concept is_typelist_callable_RT = requires(fn && fn_)
+template<typename fn, typename returnT, typename... CallArgs >
+concept is_typelist_callable_RT = requires(fn && fn_, CallArgs&&... args)
 {
-	fn_.template operator()<int>();
+	{ fn_.template operator() < int > (std::forward<CallArgs>(args)...) }->  std::convertible_to<returnT>;
 };
 
-namespace KTR::Meta
-{
-	template<typename ... Args>
-	struct typelist
-	{};
 
-	
+namespace KTR::Meta {
+	template<typename ... Args>struct typelist {};
+
 
 
 	//Front
@@ -161,15 +164,9 @@ namespace KTR::Meta
 
 	//SameTypelist
 	template< typename list, typename list2>
-	struct is_same_typeList;
-	template<>
-	struct is_same_typeList<typelist<>, typelist<>> :true_type {};
-	template< typename... Arg, typename... Arg2>
-	struct is_same_typeList<typelist<Arg...>, typelist<Arg2...>> :false_type {};
+	struct is_same_typeList : false_type {};
 	template< typename... Arg>
 	struct is_same_typeList<typelist<Arg...>, typelist<Arg...>> :true_type {};
-
-
 	template<typename list, typename list2>
 	static constexpr bool is_same_typeList_v = is_same_typeList<list, list2>::value;
 
@@ -207,16 +204,6 @@ namespace KTR::Meta
 	template<typename type, typename list>
 	using erase_t = typename erase<type, list>::value_type;
 
-	//Unique
-	template<typename list>
-	struct unique;
-	template<>
-	struct unique<typelist<>> :type_container<typelist<>> {};
-	template<typename First, typename... Rest>
-	struct unique<typelist<First, Rest...>> : conditional_t<contains_v<First, typelist<Rest...>>, unique<typelist<Rest...>>, push_front<First, typename unique<typelist<Rest...>>::value_type>> {};
-	template<typename List>
-	using unique_t = typename unique<List>::value_type;
-
 	//Remove
 	template<typename type, typename list>
 	struct remove_type;
@@ -229,6 +216,16 @@ namespace KTR::Meta
 	template<typename type, typename list>
 	using remove_type_t = typename remove_type<type, list>::value_type;
 
+	//Unique
+	template<typename list>
+	struct unique;
+	template<>
+	struct unique<typelist<>> :type_container<typelist<>> {};
+	template<typename First, typename... Rest>
+	struct unique<typelist<First, Rest...>> : type_container<push_front_t<First, typename unique<remove_type_t<First, typelist<Rest...>>>::value_type>> {};
+	template<typename List>
+	using unique_t = typename unique<List>::value_type;
+
 	//Args
 	template<typename list, typename... Arg>
 	struct is_matching_args;
@@ -240,45 +237,45 @@ namespace KTR::Meta
 	static constexpr bool is_matching_args_v = is_matching_args <list, Arg...>::value;
 
 	//Concat
-	template<typename LhsType,typename RhsType,bool unique>
+	template<typename LhsType, typename RhsType, bool unique>
 	struct concat;
-	template<typename ...LhsArgs,typename ...RhsArgs,bool unique>
-	struct concat<typelist<LhsArgs...>,typelist<RhsArgs...>,unique> : conditional<unique,unique_t<typelist<LhsArgs..., RhsArgs...>>, typelist<LhsArgs...,RhsArgs...>>{};
+	template<typename ...LhsArgs, typename ...RhsArgs, bool unique>
+	struct concat<typelist<LhsArgs...>, typelist<RhsArgs...>, unique> : conditional<unique, unique_t<typelist<LhsArgs..., RhsArgs...>>, typelist<LhsArgs..., RhsArgs...>> {};
 
 	template<typename LhsType, typename RhsType, bool unique>
-	using  concat_t = typename concat<LhsType,RhsType,unique>::value_type  ;
+	using  concat_t = typename concat<LhsType, RhsType, unique>::value_type;
 
 
 	// filter
-	template<template<typename> class Filter,typename List>
+	template<template<typename> class Filter, typename List>
 	struct filter;
-	
+
 	template<template<typename> class Filter>
-	struct filter<Filter,typelist<>> : type_container<typelist<>>{};
+	struct filter<Filter, typelist<>> : type_container<typelist<>> {};
 
 
-	template<template<typename >class T,typename Test>
+	template<template<typename >class T, typename Test>
 	concept typelist_filter_type = requires()
 	{
 		{ T<Test>::value }-> std::convertible_to<bool>;
 	};
 
-	template<template<typename> class Filter,typename First,typename ...Rest> requires(typelist_filter_type<Filter,First>)
-	struct filter<Filter, typelist<First, Rest...>> : conditional <
-		  Filter<First>::value
+	template<template<typename> class Filter, typename First, typename ...Rest> requires(typelist_filter_type<Filter, First>)
+		struct filter<Filter, typelist<First, Rest...>> : conditional <
+		Filter<First>::value
 		, push_front_t < First, typename filter<Filter, typelist< Rest...>>::value_type >
-		, typename filter<Filter, typelist<Rest...>>::value_type>{};
+		, typename filter<Filter, typelist<Rest...>>::value_type> {};
 
 
 	template<template<typename> class Filter, typename List>
 	using filter_t = typename filter<Filter, List>::value_type;
 
 	// transform 
-	template<template<typename >class Transform,typename List>
+	template<template<typename >class Transform, typename List>
 	struct transform;
 
 	template<template<typename >class Transform>
-	struct transform<Transform,typelist<>> : type_container<typelist<>>{};
+	struct transform<Transform, typelist<>> : type_container<typelist<>> {};
 
 
 	template<template<typename >class T, typename Test>
@@ -287,17 +284,17 @@ namespace KTR::Meta
 		typename T<Test>::value_type;
 	};
 
-	template<template<typename> class Transform, typename First, typename ...Rest> requires(typelist_transform_type<Transform,First>)
-	struct transform < Transform,typelist<First,Rest...>> : type_container<push_front_t<typename Transform<First>::value_type, typename transform<Transform,typelist<Rest...>>::value_type >>{};
-	
+	template<template<typename> class Transform, typename First, typename ...Rest> requires(typelist_transform_type<Transform, First>)
+		struct transform < Transform, typelist<First, Rest...>> : type_container<push_front_t<typename Transform<First>::value_type, typename transform<Transform, typelist<Rest...>>::value_type >> {};
+
 	template<template<typename >class Transform, typename List>
 	using transform_t = typename transform<Transform, List>::value_type;
 
 	//IsTypeList
 	template<typename T>
-	struct is_type_list : false_type{};
+	struct is_type_list : false_type {};
 	template<typename ...Args>
-	struct is_type_list<typelist<Args...>> : true_type{};
+	struct is_type_list<typelist<Args...>> : true_type {};
 
 	template<typename Type>
 	static constexpr bool is_type_list_v = is_type_list <Type>::value;
@@ -311,14 +308,36 @@ namespace KTR::Meta
 	struct RunTime<typelist<Args...>>
 	{
 		using typelist_type = typelist<Args...>;
-		template<typename fn> requires(is_typelist_callable_RT<fn>)
-		static void for_each(fn&& fn_)
+		template<typename fn, typename ...CallArgs> requires(is_typelist_callable_RT<fn, void, CallArgs...>)
+			static void for_each(fn&& fn_, CallArgs&&... _args)
 		{
-			(fn_.template operator() < Args > (), ...);
+			(std::forward<fn>(fn_).template operator() < Args > (std::forward<CallArgs>(_args)...), ...);
+		}
+
+		template<typename fn, typename ...CallArgs> requires(is_typelist_callable_RT<fn, void, std::uint64_t, CallArgs...>)
+			static void for_each_index(fn&& fn_, CallArgs&&... _args)
+		{
+			std::uint64_t index = 0;
+
+			(std::forward<fn>(fn_).template operator() < Args > (index++, std::forward<CallArgs>(_args)...), ...);
 		}
 	};
 
+	template<typename list>
+	struct convert;
 
+	template<typename ... Args>
+	struct convert<typelist<Args...>>
+	{
+		using as_tuple_type = std::tuple<Args...>;
+		using as_variant_type = std::variant<Args...>;
+	};
+
+	template<typename list>
+	using convert_as_tuple_t = typename convert<list>::as_tuple_type;
+
+	template<typename list>
+	using convert_as_variant_t = typename convert<list>::as_variant_type;
 
 }
 
